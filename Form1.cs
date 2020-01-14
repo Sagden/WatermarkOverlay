@@ -13,11 +13,16 @@ namespace Overlay_Watermark
 {
     public partial class Form1 : Form
     {
+        WatermarkService watermarkService;
+        MusicService musicService;
         public Form1()
         {
             InitializeComponent();
 
             comboBox1.SelectedIndex = 0;
+
+            watermarkService = new WatermarkService();
+            musicService = new MusicService();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -40,30 +45,26 @@ namespace Overlay_Watermark
             pathToOutputFile.DefaultExt = "*.mp3";
             pathToOutputFile.Filter = "MP3 File (.mp3)|*.mp3";
             if (pathToOutputFile.ShowDialog() != DialogResult.OK) return;
-            
 
-            MainFile mainFile = new MainFile(listBox1.Items, Convert.ToDouble(pauseBetweenTrack.Text));
-            
-            WatermarkFile watermarkFile = new WatermarkFile(
-                label2.Text, 
-                Convert.ToDouble(watermarkRepeat.Text), 
+            var musicTrack = musicService.CreateMusicFile(listBox1.Items, Convert.ToDouble(pauseBetweenTrack.Text));
+            var musicTrackLenght = musicService.GetTrackLenght(listBox1.Items, Convert.ToDouble(pauseBetweenTrack.Text));
+
+            var watermarkTrack = watermarkService.CreateWatermarkFile(
+                musicTrackLenght,
+                pathToWM.Text,
+                Convert.ToDouble(watermarkRepeat.Text),
                 Convert.ToDouble(watermarkOffset.Text));
 
-            WatermarkService watermarkService = new WatermarkService();
-            watermarkService.PathToOutputFile = pathToOutputFile.FileName;
+            var mixingFile = watermarkService.Overlay(musicTrack, watermarkTrack, Convert.ToDouble(watermarkOffset.Text));
+            watermarkService.SaveMixToFile(mixingFile, pathToOutputFile.FileName);
 
-            if (watermarkService.Overlay(mainFile, watermarkFile))
-            {
-                MessageBox.Show("Все прошло успешно", "Уведомление");
-                Application.Exit();
-            }
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBox1.SelectedIndex == 0)
             {
-                label2.Text = "SingleWM.mp3";
+                pathToWM.Text = "SingleWM.mp3";
             }
             else
             if (comboBox1.SelectedIndex == 1)
@@ -73,7 +74,7 @@ namespace Overlay_Watermark
                 pathToWMFile.Filter = "Wav and mp3 files | *.wav; *.mp3";
                 if (pathToWMFile.ShowDialog() != DialogResult.OK) return;
 
-                label2.Text = pathToWMFile.FileName;
+                pathToWM.Text = pathToWMFile.FileName;
             }
         }
 
@@ -81,7 +82,6 @@ namespace Overlay_Watermark
         {
             listBox1.Items.Remove(listBox1.Items[listBox1.SelectedIndex]);
         }
-
         private void buttonUp_Click(object sender, EventArgs e)
         {
             if (listBox1.SelectedIndex != 0)
@@ -98,7 +98,6 @@ namespace Overlay_Watermark
                 listBox1.Items.RemoveAt(selectedIndex);
             }
         }
-
         private void buttonDown_Click(object sender, EventArgs e)
         {
             if (listBox1.SelectedIndex != listBox1.Items.Count-1)
@@ -116,14 +115,5 @@ namespace Overlay_Watermark
             }
         }
 
-        private void textBox3_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }

@@ -34,7 +34,7 @@
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.pathToWM = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.watermarkRepeat = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -133,16 +133,16 @@
             this.comboBox1.TabIndex = 9;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
-            // label2
+            // pathToWM
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 285);
-            this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(22, 13);
-            this.label2.TabIndex = 0;
-            this.label2.Text = "C:\\";
-            this.label2.Visible = false;
+            this.pathToWM.AutoSize = true;
+            this.pathToWM.Location = new System.Drawing.Point(9, 285);
+            this.pathToWM.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.pathToWM.Name = "pathToWM";
+            this.pathToWM.Size = new System.Drawing.Size(22, 13);
+            this.pathToWM.TabIndex = 0;
+            this.pathToWM.Text = "C:\\";
+            this.pathToWM.Visible = false;
             // 
             // label3
             // 
@@ -246,7 +246,6 @@
             this.pauseBetweenTrack.Size = new System.Drawing.Size(27, 20);
             this.pauseBetweenTrack.TabIndex = 12;
             this.pauseBetweenTrack.Text = "2";
-            this.pauseBetweenTrack.TextChanged += new System.EventHandler(this.textBox3_TextChanged);
             // 
             // label1
             // 
@@ -257,7 +256,6 @@
             this.label1.Size = new System.Drawing.Size(120, 13);
             this.label1.TabIndex = 13;
             this.label1.Text = "Пауза между треками";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // label7
             // 
@@ -279,7 +277,7 @@
             this.Controls.Add(this.buttonDown);
             this.Controls.Add(this.buttonUp);
             this.Controls.Add(this.buttonRemove);
-            this.Controls.Add(this.label2);
+            this.Controls.Add(this.pathToWM);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label4);
@@ -308,7 +306,7 @@
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label pathToWM;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox watermarkRepeat;
         private System.Windows.Forms.Label label4;

@@ -14,24 +14,29 @@ using NAudio.Wave;
 
 namespace Overlay_Watermark
 {
-    class MainFile
+    class MusicService
     {
-        private ListBox.ObjectCollection trackList;
-        private double trackLenght;
-        private double pauseBetweenTrack;
-        
-        public MainFile(ListBox.ObjectCollection trackList, double pauseBetweenTrack)
-        {
-            this.trackList = trackList;
-            this.pauseBetweenTrack = pauseBetweenTrack;
-        }
-
-        public ISampleProvider CreateMusicFile()
+        public ISampleProvider CreateMusicFile(ListBox.ObjectCollection trackList, double pauseBetweenTrack)
         {
             ISampleProvider readerMusic = new AudioFileReader(trackList[0].ToString());
 
+            if (trackList.Count > 0)
+            {
+                for (int i = 1; i < trackList.Count; i++)
+                {
+                    var reader = new AudioFileReader(trackList[i].ToString());
+                    readerMusic = readerMusic.FollowedBy(TimeSpan.FromSeconds(pauseBetweenTrack), reader);
+                }
+            }
+            return readerMusic;
+        }
+
+
+        public double GetTrackLenght(ListBox.ObjectCollection trackList, double pauseBetweenTrack)
+        {
+
             var getTime = new AudioFileReader(trackList[0].ToString());
-            trackLenght += getTime.TotalTime.TotalSeconds;
+            double trackLenght = getTime.TotalTime.TotalSeconds;
 
             if (trackList.Count > 0)
             {
@@ -42,14 +47,8 @@ namespace Overlay_Watermark
                     trackLenght += reader.TotalTime.TotalSeconds;
                     trackLenght += pauseBetweenTrack;
 
-                    readerMusic = readerMusic.FollowedBy(TimeSpan.FromSeconds(pauseBetweenTrack), reader);
-
                 }
             }
-            return readerMusic;
-        }
-        public double GetTrackLenght()
-        {
             return trackLenght;
         }
     }
