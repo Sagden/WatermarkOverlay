@@ -1,51 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-
-using System.Windows.Forms;
-using Overlay_Watermark;
 using NAudio.Wave;
+using Overlay_Watermark.Interfaces;
 
 namespace Overlay_Watermark
 {
-    class MusicService
+    public class MusicService : IMusicService
     {
-        public ISampleProvider CreateMusicFile(ListBox.ObjectCollection trackList, double pauseBetweenTrack)
+        public ISampleProvider Create(List<string> musicList, double musicBreak)
         {
-            ISampleProvider readerMusic = new AudioFileReader(trackList[0].ToString());
+            if (musicList == null) 
+                throw new ArgumentNullException("Список треков пуст");
 
-            if (trackList.Count > 0)
+            ISampleProvider readerMusic = new AudioFileReader(musicList.First());
+
+            foreach (var music in musicList)
             {
-                for (int i = 1; i < trackList.Count; i++)
-                {
-                    var reader = new AudioFileReader(trackList[i].ToString());
-                    readerMusic = readerMusic.FollowedBy(TimeSpan.FromSeconds(pauseBetweenTrack), reader);
-                }
+                if (musicList.IndexOf(music) == 0) 
+                    continue;
+
+                var reader = new AudioFileReader(music);
+                readerMusic = readerMusic.FollowedBy(TimeSpan.FromSeconds(musicBreak), reader);
             }
             return readerMusic;
         }
 
-
-        public double GetTrackLenght(ListBox.ObjectCollection trackList, double pauseBetweenTrack)
+        public double GetLenght(List<string> musicList, double musicBreak)
         {
-
-            var getTime = new AudioFileReader(trackList[0].ToString());
+            var getTime = new AudioFileReader(musicList[0].ToString());
             double trackLenght = getTime.TotalTime.TotalSeconds;
 
-            if (trackList.Count > 0)
+            if (musicList.Count > 0)
             {
-                for (int i = 1; i < trackList.Count; i++)
+                for (int i = 1; i < musicList.Count; i++)
                 {
 
-                    var reader = new AudioFileReader(trackList[i].ToString());
+                    var reader = new AudioFileReader(musicList[i].ToString());
                     trackLenght += reader.TotalTime.TotalSeconds;
-                    trackLenght += pauseBetweenTrack;
+                    trackLenght += musicBreak;
 
                 }
             }

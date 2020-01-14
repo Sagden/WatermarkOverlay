@@ -1,62 +1,62 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using Overlay_Watermark.Interfaces;
 
 namespace Overlay_Watermark
 {
-    class WatermarkService
+    public class WatermarkService : IWatermarkService
     {
-
-        public MixingWaveProvider32 Overlay(ISampleProvider musicTrack, ISampleProvider watermarkTrack, double offsetWatermarkTime)
+        public MixingWaveProvider32 Overlay(ISampleProvider music, ISampleProvider watermark, double watermarkOffset)
         {
+            if (music == null || watermark == null)
+                throw new ArgumentNullException("Не удалось наложить водяной знак. Трек или водяной знак были пустыми");
 
-            NAudio.MediaFoundation.MediaFoundationApi.Startup();                       //Инициализация энкодера(чтобы получать на выходе любой формат)
+            // Инициализация энкодера(чтобы получать на выходе любой формат)
+            NAudio.MediaFoundation.MediaFoundationApi.Startup();
 
-            var sampleProvider = new OffsetSampleProvider(watermarkTrack.ToWaveProvider().ToSampleProvider()); //Деление на sample
-            sampleProvider.DelayBy = TimeSpan.FromSeconds(offsetWatermarkTime);                           //Добавление задержки
+            var sampleProvider = new OffsetSampleProvider(watermark.ToWaveProvider().ToSampleProvider()); //Деление на sample
+            sampleProvider.DelayBy = TimeSpan.FromSeconds(watermarkOffset);                           //Добавление задержки
 
             var watermarkWaveProvider = sampleProvider.ToWaveProvider();                        //Перевод в wave водяного знака
-            var musicWaveProvider = musicTrack.ToWaveProvider();                             //Перевод в wave музыки
+            var musicWaveProvider = music.ToWaveProvider();                             //Перевод в wave музыки
 
-            var mix = new MixingWaveProvider32(new[] { musicWaveProvider, watermarkWaveProvider });       //Слияние трека и водяного знака
-            mix.ToSampleProvider().ToWaveProvider16();
+            // Слияние трека и водяного знака
+            var result = new MixingWaveProvider32(new[] { musicWaveProvider, watermarkWaveProvider });
+            result.ToSampleProvider().ToWaveProvider16();
 
-            return mix;
+            return result;
         }
 
-        public ISampleProvider CreateWatermarkFile(
-            double musicTrackLenght,
-            string pathToWatermarkFile, 
-            double repeatWatermarkTimer, 
-            double offsetWatermarkTime)
+        public ISampleProvider Create(
+            double musicLenght,
+            string watermarkFilePath, 
+            double watermarkRepeat, 
+            double watermarkOffset)
         {
-            var readerWM = new AudioFileReader(pathToWatermarkFile);
+            var readerWM = new AudioFileReader(watermarkFilePath);
             var watermarkLenght = readerWM.TotalTime.TotalSeconds;
 
             ISampleProvider provider = readerWM;
 
-            //вычисление кол-ва водяных знаков на файле
-            int watermarkCount = (int)((musicTrackLenght - offsetWatermarkTime) / (repeatWatermarkTimer + watermarkLenght));
+            // Вычисление количества водяных знаков на файле
+            int watermarkCount = 
+                (int)((musicLenght - watermarkOffset) / (watermarkRepeat + watermarkLenght));
 
-
-            for (var i = 0; i < watermarkCount; i++) //Создание файла с водяными знаками равного по длинне с треком
+            // Создание файла с водяными знаками равного по длинне с треком
+            for (var i = 0; i < watermarkCount; i++)
             {
-                AudioFileReader readerTemp = new AudioFileReader(pathToWatermarkFile);
-                provider = provider.FollowedBy(TimeSpan.FromSeconds(repeatWatermarkTimer), readerTemp);
+                var readerTemp = new AudioFileReader(watermarkFilePath);
+                provider = provider.FollowedBy(TimeSpan.FromSeconds(watermarkRepeat), readerTemp);
             }
 
             return provider;
         }
 
-        public void SaveMixToFile(MixingWaveProvider32 mix, string pathToSave)
+        public void SaveToFile(MixingWaveProvider32 music, string path)
         {
-            MediaFoundationEncoder.EncodeToMp3(mix, pathToSave, 320000);          //Создание mp3 файла с водяным знаком
-            //WaveFileWriter.CreateWaveFile(PathToOutputFile, mix);               //Создание WAV файла с водяным знаком
+            MediaFoundationEncoder.EncodeToMp3(music, path, 320000);
+            //WaveFileWriter.CreateWaveFile(path, music);
         }
     }
 }
